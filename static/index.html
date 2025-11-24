@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor MRI Classification System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>🧠 Brain Tumor Classifier</h1>
+            </div>
+            <div class="sidebar-divider"></div>
+            
+            <!-- Model Status -->
+            <div class="model-status" id="modelStatus">
+                <div class="status-indicator" id="statusIndicator">⏳ Loading...</div>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <!-- Navigation -->
+            <nav class="navigation">
+                <button class="nav-btn active" data-page="home">🏠 Home</button>
+                <button class="nav-btn" data-page="predict">🔮 Predict</button>
+                <button class="nav-btn" data-page="visualizations">📊 Visualizations</button>
+                <button class="nav-btn" data-page="upload">📤 Upload Data</button>
+                <button class="nav-btn" data-page="retrain">🔄 Retrain Model</button>
+                <button class="nav-btn" data-page="uptime">📈 Model Uptime</button>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <h1 class="main-header">Brain Tumor MRI Classification System</h1>
+                
+                <div class="content-section">
+                    <h2>Welcome to the Brain Tumor Classification System</h2>
+                    
+                    <p>This application uses deep learning to classify brain tumor MRI images into four categories:</p>
+                    <ul>
+                        <li><strong>Glioma</strong></li>
+                        <li><strong>Meningioma</strong></li>
+                        <li><strong>No Tumor</strong></li>
+                        <li><strong>Pituitary Tumor</strong></li>
+                    </ul>
+                    
+                    <h3>Features:</h3>
+                    <ul>
+                        <li>🎯 <strong>Single Image Prediction</strong>: Upload an MRI image and get instant classification</li>
+                        <li>📊 <strong>Data Visualizations</strong>: Explore dataset features and insights</li>
+                        <li>📤 <strong>Bulk Data Upload</strong>: Upload multiple images for retraining</li>
+                        <li>🔄 <strong>Model Retraining</strong>: Trigger retraining with new data</li>
+                        <li>📈 <strong>Uptime Monitoring</strong>: Track model performance and availability</li>
+                    </ul>
+                    
+                    <h3>How to Use:</h3>
+                    <ol>
+                        <li>Navigate to <strong>Predict</strong> to classify a single image</li>
+                        <li>Check <strong>Visualizations</strong> to explore dataset features</li>
+                        <li>Use <strong>Upload Data</strong> to add new training data</li>
+                        <li>Trigger <strong>Retrain Model</strong> to update the model with new data</li>
+                        <li>Monitor <strong>Model Uptime</strong> for system health</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Predict Page -->
+            <div id="predict" class="page">
+                <h1>Image Prediction</h1>
+                <p>Upload a brain tumor MRI image to get a classification prediction.</p>
+                
+                <div class="upload-section">
+                    <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png" style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
+                        Choose Image File
+                    </button>
+                    <span id="fileName" class="file-name"></span>
+                </div>
+                
+                <div class="prediction-container">
+                    <div class="image-preview">
+                        <h3>Uploaded Image</h3>
+                        <div id="imagePreview" class="image-display"></div>
+                    </div>
+                    
+                    <div class="prediction-results">
+                        <button class="btn btn-primary btn-large" id="predictBtn" onclick="makePrediction()" disabled>
+                            🔮 Predict
+                        </button>
+                        
+                        <div id="predictionOutput" class="prediction-output"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualizations Page -->
+            <div id="visualizations" class="page">
+                <h1>Data Visualizations</h1>
+                <p>Explore dataset features and insights.</p>
+                
+                <div id="visualizationsContent">
+                    <div class="loading">Loading visualizations...</div>
+                </div>
+            </div>
+            
+            <!-- Upload Data Page -->
+            <div id="upload" class="page">
+                <h1>Upload Data for Retraining</h1>
+                <p>Upload multiple brain tumor MRI images to be used for model retraining.</p>
+                
+                <div class="upload-section">
+                    <input type="file" id="multiImageInput" accept="image/jpeg,image/jpg,image/png" multiple style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('multiImageInput').click()">
+                        Choose Image Files
+                    </button>
+                    <span id="fileCount" class="file-name"></span>
+                </div>
+                
+                <div id="uploadedFiles" class="uploaded-files"></div>
+                
+                <div class="form-group">
+                    <label for="classSelect">Save to class folder:</label>
+                    <select id="classSelect" class="form-control">
+                        <option value="glioma">Glioma</option>
+                        <option value="meningioma">Meningioma</option>
+                        <option value="notumor">No Tumor</option>
+                        <option value="pituitary">Pituitary</option>
+                        <option value="retrain_uploads">Retrain Uploads</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary btn-large" id="saveFilesBtn" onclick="saveFiles()" disabled>
+                    💾 Save Files
+                </button>
+                
+                <div id="uploadResult" class="result-message"></div>
+            </div>
+            
+            <!-- Retrain Model Page -->
+            <div id="retrain" class="page">
+                <h1>Retrain Model</h1>
+                <p>Trigger model retraining with newly uploaded data.</p>
+                
+                <div class="stats-grid" id="retrainStats">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Uploaded</div>
+                        <div class="stat-value" id="totalUploaded">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Processed</div>
+                        <div class="stat-value" id="processed">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Training Sessions</div>
+                        <div class="stat-value" id="trainingSessions">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value" id="completed">-</div>
+                    </div>
+                </div>
+                
+                <div class="retrain-config">
+                    <h3>Retraining Configuration</h3>
+                    <div class="form-group">
+                        <label for="epochs">Training Epochs:</label>
+                        <input type="range" id="epochs" min="5" max="50" value="10" class="slider">
+                        <span id="epochsValue">10</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="fineTuneEpochs">Fine-tuning Epochs:</label>
+                        <input type="range" id="fineTuneEpochs" min="0" max="10" value="3" class="slider">
+                        <span id="fineTuneEpochsValue">3</span>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-large" id="retrainBtn" onclick="triggerRetraining()">
+                        🔄 Trigger Retraining
+                    </button>
+                </div>
+                
+                <div id="retrainResult" class="result-message"></div>
+                
+                <div id="recentSessions" class="sessions-table"></div>
+            </div>
+            
+            <!-- Model Uptime Page -->
+            <div id="uptime" class="page">
+                <h1>Model Uptime & Statistics</h1>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value" id="uptimeValue">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Requests</div>
+                        <div class="stat-value" id="totalRequests">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Model Status</div>
+                        <div class="stat-value" id="modelStatusValue">-</div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h3>System Information</h3>
+                    <div class="info-grid">
+                        <div>
+                            <h4>Model Information</h4>
+                            <div id="modelInfo"></div>
+                        </div>
+                        <div>
+                            <h4>Performance Metrics</h4>
+                            <div id="performanceInfo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>
+
